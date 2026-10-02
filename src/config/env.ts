@@ -14,11 +14,7 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d')
 }).superRefine((value, ctx) => {
   if (value.NODE_ENV === 'production' && value.JWT_SECRET === 'dev-only-change-this-secret-before-production') {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['JWT_SECRET'],
-      message: 'JWT_SECRET must be explicitly configured in production.'
-    });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['JWT_SECRET'], message: 'JWT_SECRET must be explicitly configured in production.' });
   }
 });
 
