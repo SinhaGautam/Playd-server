@@ -41,6 +41,6 @@ describe('health', () => {
       error: { code: 'NOT_FOUND', message: 'Route not found.' },
       meta: { requestId: expect.any(String) }
     });
-    expect(response.json().requestId).toBeTypeOf('string');
+    expect(response.json().meta.requestId).toBeTypeOf('string');
   });
 });
