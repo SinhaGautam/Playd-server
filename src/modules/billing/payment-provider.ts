@@ -1,0 +1,2 @@
+export interface PaymentProviderSubscriptionEvent{providerEventId:string;provider:string;subscriptionId:string;status:'active'|'past_due'|'cancelled'|'expired';periodStart?:Date;periodEnd?:Date;}
+export interface PaymentProvider{createCheckout(userId:string):Promise<{checkoutUrl:string}>;cancelSubscription(providerSubscriptionId:string):Promise<void>;verifyWebhook(signature:string,rawBody:string):boolean;}
