@@ -4,7 +4,9 @@
   "private": true,
   "description": "PLAYD backend - production-oriented modular monolith.",
   "type": "module",
-  "engines": { "node": ">=22.11.0" },
+  "engines": {
+    "node": ">=22.11.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "npm run prisma:generate && tsc -p tsconfig.json",
@@ -20,8 +22,6 @@
   "dependencies": {
     "@prisma/adapter-pg": "6.19.3",
     "@prisma/client": "6.19.3",
-    "@fastify/helmet": "latest",
-    "@fastify/sensible": "latest",
     "dotenv": "latest",
     "express": "5.1.0",
     "jose": "latest",
