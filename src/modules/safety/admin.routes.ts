@@ -1,0 +1,2 @@
+import {Router} from 'express'; import {requireAuth} from '../auth/auth.middleware.js'; import {requireAdmin} from '../auth/auth.admin.js'; import type {AdminSafetyController} from './admin.controller.js';
+export function adminSafetyRouter(c:AdminSafetyController):Router{const r=Router();r.get('/v1/admin/reports',requireAuth,requireAdmin,c.listReports);r.patch('/v1/admin/reports/:reportId',requireAuth,requireAdmin,c.updateReport);return r;}
