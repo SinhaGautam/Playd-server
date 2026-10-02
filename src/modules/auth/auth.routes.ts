@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { AppError } from '../../core/errors.js';
 import { authenticateUser, registerUser } from './auth.service.js';
+import { createAccessToken } from './auth.jwt.js';
 
 const credentialsSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -16,7 +17,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const user = await registerUser(parsed.data.email, parsed.data.password);
-    return reply.code(201).send({ user });
+    const accessToken = await createAccessToken(user);
+    return reply.code(201).send({ user, accessToken });
   });
 
   app.post('/v1/auth/login', async (request) => {
@@ -26,6 +28,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const user = await authenticateUser(parsed.data.email, parsed.data.password);
-    return { user };
+    const accessToken = await createAccessToken(user);
+    return { user, accessToken };
   });
 }
