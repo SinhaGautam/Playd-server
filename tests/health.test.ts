@@ -16,7 +16,7 @@ describe('health', () => {
     const response = await app.inject({ method: 'GET', url: '/health/live' });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ status: 'ok' });
+    expect(response.json()).toMatchObject({ success: true, data: { status: 'ok' }, meta: { requestId: expect.any(String) } });
   });
 
   it('returns a request id', async () => {
@@ -37,8 +37,9 @@ describe('health', () => {
 
     expect(response.statusCode).toBe(404);
     expect(response.json()).toMatchObject({
-      error: 'NOT_FOUND',
-      message: 'Route not found'
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Route not found.' },
+      meta: { requestId: expect.any(String) }
     });
     expect(response.json().requestId).toBeTypeOf('string');
   });
