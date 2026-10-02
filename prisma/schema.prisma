@@ -13,13 +13,49 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-enum UserStatus { active suspended deleted @@map("user_status") }
-enum SportSkillLevel { beginner intermediate advanced @@map("sport_skill_level") }
-enum SwipeAction { like pass @@map("swipe_action") }
-enum MatchStatus { active unmatched @@map("match_status") }
-enum ReportStatus { open reviewed dismissed actioned @@map("report_status") }
-enum SubscriptionStatus { trial active past_due cancelled expired @@map("subscription_status") }
-enum NotificationType { match message system @@map("notification_type") }
+enum UserStatus {
+  active
+  suspended
+  deleted
+  @@map("user_status")
+}
+enum SportSkillLevel {
+  beginner
+  intermediate
+  advanced
+  @@map("sport_skill_level")
+}
+enum SwipeAction {
+  like
+  pass
+  @@map("swipe_action")
+}
+enum MatchStatus {
+  active
+  unmatched
+  @@map("match_status")
+}
+enum ReportStatus {
+  open
+  reviewed
+  dismissed
+  actioned
+  @@map("report_status")
+}
+enum SubscriptionStatus {
+  trial
+  active
+  past_due
+  cancelled
+  expired
+  @@map("subscription_status")
+}
+enum NotificationType {
+  match
+  message
+  system
+  @@map("notification_type")
+}
 
 model User {
   id String @id @default(uuid()) @db.Uuid
