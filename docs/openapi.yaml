@@ -1,0 +1,392 @@
+openapi: 3.0.3
+info:
+  title: PLAYD API
+  version: 1.0.0
+  description: V1 REST API for the PLAYD sports matching application.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Discovery
+  - name: Matches
+  - name: Chat
+  - name: Safety
+  - name: Billing
+  - name: Notifications
+paths:
+  /health/live:
+    get:
+      tags: [Health]
+      security: []
+      summary: Liveness check
+      responses:
+        '200':
+          description: Process is alive
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+  /health/ready:
+    get:
+      tags: [Health]
+      security: []
+      summary: Readiness check
+      responses:
+        '200': { description: API and database are ready }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+  /v1/auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: Email already registered }
+  /v1/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/users/me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      responses:
+        '200': { description: Current user and profile }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/users/me/profile:
+    put:
+      tags: [Users]
+      summary: Create or update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200': { description: Profile updated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/discovery:
+    get:
+      tags: [Discovery]
+      summary: Get discovery candidates
+      parameters:
+        - { $ref: '#/components/parameters/Limit50' }
+        - in: query
+          name: sport
+          schema: { type: string, maxLength: 80 }
+      responses:
+        '200': { description: Candidate profiles }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/discovery/swipes:
+    post:
+      tags: [Discovery]
+      summary: Like or pass on a candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetUserId, action]
+              properties:
+                targetUserId: { type: string, format: uuid }
+                action: { type: string, enum: [like, pass] }
+      responses:
+        '201': { description: Swipe recorded }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/matches:
+    get:
+      tags: [Matches]
+      summary: List current matches
+      responses:
+        '200': { description: Match list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/matches/{targetUserId}:
+    post:
+      tags: [Matches]
+      summary: Create a match with a user
+      parameters:
+        - { $ref: '#/components/parameters/TargetUserId' }
+      responses:
+        '201': { description: Match created }
+        '204': { description: No match created }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/matches/{matchId}/conversation:
+    post:
+      tags: [Chat]
+      summary: Create or retrieve a match conversation
+      parameters:
+        - { $ref: '#/components/parameters/MatchId' }
+      responses:
+        '200': { description: Conversation }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/conversations/{conversationId}/messages:
+    get:
+      tags: [Chat]
+      summary: List conversation messages
+      parameters:
+        - { $ref: '#/components/parameters/ConversationId' }
+        - { $ref: '#/components/parameters/Limit100' }
+        - in: query
+          name: beforeId
+          schema: { type: string, pattern: '^[1-9][0-9]*$' }
+      responses:
+        '200': { description: Message list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Chat]
+      summary: Send a message
+      parameters:
+        - { $ref: '#/components/parameters/ConversationId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        '201': { description: Message created }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/safety/blocks:
+    get:
+      tags: [Safety]
+      summary: List blocked users
+      responses:
+        '200': { description: Block list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/safety/blocks/{userId}:
+    post:
+      tags: [Safety]
+      summary: Block a user
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '204': { description: User blocked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Safety]
+      summary: Unblock a user
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      responses:
+        '204': { description: User unblocked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/safety/reports/{userId}:
+    post:
+      tags: [Safety]
+      summary: Report a user
+      parameters:
+        - { $ref: '#/components/parameters/UserId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [spam, harassment, inappropriate, fake_profile, other] }
+                details: { type: string, maxLength: 2000 }
+      responses:
+        '201': { description: Report created }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/billing/subscription:
+    get:
+      tags: [Billing]
+      summary: Get current subscription
+      responses:
+        '200': { description: Subscription state }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/billing/coupons/redeem:
+    post:
+      tags: [Billing]
+      summary: Redeem a coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        '200': { description: Coupon redeemed and subscription returned }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications
+      parameters:
+        - { $ref: '#/components/parameters/Limit100' }
+        - in: query
+          name: beforeId
+          schema: { type: string, pattern: '^[1-9][0-9]*$' }
+      responses:
+        '200': { description: Notification list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/notifications/{notificationId}/read:
+    post:
+      tags: [Notifications]
+      summary: Mark a notification as read
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema: { type: string, pattern: '^[1-9][0-9]*$' }
+      responses:
+        '204': { description: Notification marked as read }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    UserId:
+      in: path
+      name: userId
+      required: true
+      schema: { type: string, format: uuid }
+    TargetUserId:
+      in: path
+      name: targetUserId
+      required: true
+      schema: { type: string, format: uuid }
+    MatchId:
+      in: path
+      name: matchId
+      required: true
+      schema: { type: string, format: uuid }
+    ConversationId:
+      in: path
+      name: conversationId
+      required: true
+      schema: { type: string, format: uuid }
+    Limit50:
+      in: query
+      name: limit
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+    Limit100:
+      in: query
+      name: limit
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+  responses:
+    Unauthorized:
+      description: Authentication required or token invalid
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 128, format: password }
+    AuthResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+                accessToken:
+                  type: string
+    User:
+      type: object
+      required: [id, email, status]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        status: { type: string, enum: [active, suspended, deleted] }
+    ProfileInput:
+      type: object
+      required: [displayName]
+      properties:
+        displayName: { type: string, minLength: 1, maxLength: 80 }
+        bio: { type: string, maxLength: 500, nullable: true }
+        dateOfBirth: { type: string, format: date, nullable: true }
+        avatarUrl: { type: string, format: uri, maxLength: 2048, nullable: true }
+        latitude: { type: number, minimum: -90, maximum: 90, nullable: true }
+        longitude: { type: number, minimum: -180, maximum: 180, nullable: true }
+        city: { type: string, maxLength: 120, nullable: true }
+    SuccessResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: {}
+        meta:
+          type: object
+          required: [requestId]
+          properties:
+            requestId: { type: string, format: uuid }
+    ErrorResponse:
+      type: object
+      required: [success, error, meta]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: {}
+        meta:
+          type: object
+          required: [requestId]
+          properties:
+            requestId: { type: string, format: uuid }
