@@ -23,7 +23,8 @@
     "dotenv": "latest",
     "fastify": "latest",
     "pg": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "jose": "latest"
   },
   "devDependencies": {
     "@eslint/js": "latest",
