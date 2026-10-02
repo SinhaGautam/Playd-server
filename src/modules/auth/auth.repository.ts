@@ -1,18 +1,18 @@
-import { Prisma } from '../../generated/prisma/client.js';
-import { prisma } from '../../infrastructure/database/prisma.js';
-import { ConflictException } from '../../core/errors.js';
-import type { AuthUserResponse } from './auth.dto.js';
-
-export class AuthRepository {
-  public async createUser(email:string,passwordHash:string):Promise<AuthUserResponse>{
-    try{
-      return await prisma.user.create({data:{email,passwordHash},select:{id:true,email:true,status:true}});
-    }catch(error){
-      if(error instanceof Prisma.PrismaClientKnownRequestError&&error.code==='P2002') throw new ConflictException('EMAIL_ALREADY_EXISTS','An account with this email already exists.');
-      throw error;
-    }
-  }
-  public async findByEmail(email:string):Promise<(AuthUserResponse&{passwordHash:string})|null>{
-    return prisma.user.findUnique({where:{email},select:{id:true,email:true,status:true,passwordHash:true}});
-  }
+import {Prisma} from '../../generated/prisma/client.js';
+import {prisma} from '../../infrastructure/database/prisma.js';
+import {ConflictException,NotFoundException,UnauthorizedException} from '../../core/errors.js';
+import type {AuthUserResponse} from './auth.dto.js';
+import {createHash,randomBytes} from 'node:crypto';
+const hash=(v:string)=>createHash('sha256').update(v).digest('hex');
+export class AuthRepository{
+ public async createUser(email:string,passwordHash:string):Promise<AuthUserResponse&{role:'user'|'admin'}>{try{return await prisma.user.create({data:{email,passwordHash},select:{id:true,email:true,status:true,role:true}});}catch(error){if(error instanceof Prisma.PrismaClientKnownRequestError&&error.code==='P2002')throw new ConflictException('EMAIL_ALREADY_EXISTS','An account with this email already exists.');throw error;}}
+ public async findByEmail(email:string){return prisma.user.findUnique({where:{email},select:{id:true,email:true,status:true,role:true,passwordHash:true,emailVerifiedAt:true}});}
+ public async createSession(userId:string){const token=randomBytes(48).toString('base64url');await prisma.authSession.create({data:{userId,tokenHash:hash(token),expiresAt:new Date(Date.now()+30*86400000)}});return token;}
+ public async revokeSession(token:string){await prisma.authSession.updateMany({where:{tokenHash:hash(token),revokedAt:null},data:{revokedAt:new Date()}});}
+ public async refresh(token:string){const row=await prisma.authSession.findFirst({where:{tokenHash:hash(token),revokedAt:null,expiresAt:{gt:new Date()}},include:{user:{select:{id:true,email:true,status:true,role:true}}}});if(!row)throw new UnauthorizedException('Invalid refresh token.');await prisma.authSession.update({where:{id:row.id},data:{revokedAt:new Date()}});return{user:row.user,refreshToken:await this.createSession(row.user.id)};}
+ public async createVerification(userId:string){const token=randomBytes(32).toString('base64url');await prisma.emailVerificationToken.create({data:{userId,tokenHash:hash(token),expiresAt:new Date(Date.now()+86400000)}});return token;}
+ public async verifyEmail(token:string){const row=await prisma.emailVerificationToken.findFirst({where:{tokenHash:hash(token),usedAt:null,expiresAt:{gt:new Date()}}});if(!row)throw new NotFoundException('VERIFICATION_TOKEN_INVALID','Verification token is invalid or expired.');await prisma.$transaction([prisma.emailVerificationToken.update({where:{id:row.id},data:{usedAt:new Date()}}),prisma.user.update({where:{id:row.userId},data:{emailVerifiedAt:new Date()}})]);}
+ public async createReset(email:string){const user=await prisma.user.findUnique({where:{email},select:{id:true}});if(!user)return null;const token=randomBytes(32).toString('base64url');await prisma.passwordResetToken.create({data:{userId:user.id,tokenHash:hash(token),expiresAt:new Date(Date.now()+3600000)}});return token;}
+ public async resetPassword(token:string,passwordHash:string){const row=await prisma.passwordResetToken.findFirst({where:{tokenHash:hash(token),usedAt:null,expiresAt:{gt:new Date()}}});if(!row)throw new NotFoundException('RESET_TOKEN_INVALID','Reset token is invalid or expired.');await prisma.$transaction([prisma.passwordResetToken.update({where:{id:row.id},data:{usedAt:new Date()}}),prisma.user.update({where:{id:row.userId},data:{passwordHash}}),prisma.authSession.updateMany({where:{userId:row.userId,revokedAt:null},data:{revokedAt:new Date()}})]);}
+ public async deleteAccount(userId:string){const result=await prisma.user.updateMany({where:{id:userId,status:{not:'deleted'}},data:{status:'deleted',emailVerifiedAt:null}});if(!result.count)throw new NotFoundException('USER_NOT_FOUND','User not found.');await prisma.authSession.updateMany({where:{userId,revokedAt:null},data:{revokedAt:new Date()}});}
 }
