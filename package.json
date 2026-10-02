@@ -10,10 +10,12 @@
     "start": "node dist/src/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "format": "prettier --write ."
   },
-  "engines": {"node": ">=22"},
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@fastify/helmet": "latest",
     "@fastify/sensible": "latest",
@@ -23,6 +25,7 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "latest",
     "@types/node": "latest",
     "@types/pg": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
