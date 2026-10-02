@@ -4,6 +4,8 @@ import supertest from 'supertest';
 import { env } from '../../config/env.js';
 import { requestContextMiddleware, notFoundMiddleware, errorMiddleware } from '../../common/http/error.middleware.js';
 import { registerModules } from '../../modules/index.js';
+import { rateLimit } from '../../common/security/rate-limit.js';
+import { idempotency } from './idempotency.middleware.js';
 
 export interface InjectRequest {
   method: string;
@@ -27,6 +29,8 @@ export class Application {
     this.express.set('trust proxy', env.TRUST_PROXY);
     this.express.use(requestContextMiddleware);
     this.express.use(express.json({ limit: '64kb' }));
+    this.express.use(rateLimit(300, 60_000));
+    this.express.use(idempotency());
     registerModules(this.express);
     this.express.use(notFoundMiddleware);
     this.express.use(errorMiddleware);
