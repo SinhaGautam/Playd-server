@@ -40,7 +40,7 @@ export function buildApp() {
 
     return reply.code(500).send({
       error: 'INTERNAL_SERVER_ERROR',
-      message: env.NODE_ENV === 'production' ? 'Internal Server Error' : error.message,
+      message: env.NODE_ENV === 'production' ? 'Internal Server Error' : error instanceof Error ? error.message : 'Unknown error',
       requestId: request.id
     });
   });
