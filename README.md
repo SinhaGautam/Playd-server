@@ -16,7 +16,9 @@ Backend API for the PLAYD sports matching application.
 1. Copy `.env.example` to `.env`.
 2. Start PostgreSQL with `docker compose up -d postgres`.
 3. Install dependencies with `npm install`.
-4. Start the API with `npm run dev`.
+4. Build with `npm run build`.
+5. Apply database migrations with `npm run migrate`.
+6. Start the API with `npm run dev`.
 
 The API listens on port 3000 by default.
 
@@ -27,6 +29,13 @@ npm run lint
 npm test
 npm run build
 ```
+
+## Database
+
+Database schema is managed by ordered SQL migrations under `src/db/migrations`.
+Run `npm run migrate` after building. Migrations are applied transactionally and protected by a PostgreSQL advisory lock.
+
+V1 includes users/profiles, sports and preferences, discovery swipes, matches, chat, moderation, coupons, subscriptions, and notifications.
 
 ## Health endpoints
 
