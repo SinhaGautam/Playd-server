@@ -34,7 +34,8 @@ describe('API quality', () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({
-      error: 'INVALID_JSON',
+      success: false,
+      error: { code: 'INVALID_JSON' },
       requestId: expect.any(String)
     });
   });
@@ -52,7 +53,8 @@ describe('API quality', () => {
 
     expect(response.statusCode).toBe(413);
     expect(response.json()).toMatchObject({
-      error: 'PAYLOAD_TOO_LARGE',
+      success: false,
+      error: { code: 'PAYLOAD_TOO_LARGE' },
       requestId: expect.any(String)
     });
   });
