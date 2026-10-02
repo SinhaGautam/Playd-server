@@ -1,0 +1,1 @@
+import {Router} from 'express'; import type {BillingWebhookController} from './webhook.controller.js'; export function billingWebhookRouter(c:BillingWebhookController){const r=Router();r.post('/v1/billing/webhooks/subscription',c.handle);return r;}
