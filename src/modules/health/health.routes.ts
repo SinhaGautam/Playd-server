@@ -1,12 +1,1 @@
-import type { FastifyInstance } from 'fastify';
-import { checkDatabase } from '../../db/pool.js';
-export async function healthRoutes(app: FastifyInstance): Promise<void> {
-  app.get('/health/live', async () => ({ status: 'ok' }));
-  app.get('/health/ready', async (_request, reply) => {
-    try { await checkDatabase(); return { status: 'ok', database: 'ok' }; }
-    catch (error) {
-      app.log.error(error, 'readiness database check failed');
-      return reply.code(503).send({ status: 'unavailable', database: 'unavailable' });
-    }
-  });
-}
+import {Router} from 'express'; import {ApiResponse} from '../../common/http/api-response.js'; import {prisma} from '../../infrastructure/database/prisma.js'; export function healthRouter():Router{const r=Router();r.get('/health/live',(req,res)=>res.json(ApiResponse.success({status:'ok'},req.requestId)));r.get('/health/ready',async(req,res,next)=>{try{await prisma.user.count();return res.json(ApiResponse.success({status:'ok',database:'ok'},req.requestId));}catch(e){next(e);}});return r;}

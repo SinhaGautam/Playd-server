@@ -16,7 +16,7 @@ describe('discovery', () => {
     const response = await app.inject({ method: 'GET', url: '/v1/discovery' });
 
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toMatchObject({ error: 'UNAUTHORIZED' });
+    expect(response.json()).toMatchObject({ success: false, error: { code: 'UNAUTHORIZED' } });
   });
 
   it('validates swipe payloads before database access', async () => {

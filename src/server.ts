@@ -1,42 +1,42 @@
 import { buildApp } from './app.js';
 import { env } from './config/env.js';
-import { db } from './db/pool.js';
+import { disconnectDatabase } from './infrastructure/database/prisma.js';
+import { logger } from './infrastructure/logging/logger.js';
+import type { Server } from 'node:http';
+import type { Application } from './infrastructure/http/application.js';
 
-const app = buildApp();
+const application: Application = buildApp();
+let server: Server | undefined;
 let shuttingDown = false;
 
-const shutdown = async (signal: string): Promise<void> => {
+async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-
-  app.log.info({ signal }, 'shutting down');
-
+  logger.info({ signal }, 'shutdown started');
   const timeout = setTimeout(() => {
-    app.log.error('graceful shutdown timed out');
+    logger.error({ signal }, 'shutdown timeout');
     process.exit(1);
   }, env.SHUTDOWN_TIMEOUT_MS);
-
   timeout.unref();
-
   try {
-    await app.close();
-    await db.end();
+    if (server) await new Promise<void>((resolve, reject) => server!.close((error?: Error) => error ? reject(error) : resolve()));
+    await disconnectDatabase();
     clearTimeout(timeout);
+    logger.info({ signal }, 'shutdown completed');
     process.exit(0);
   } catch (error) {
-    app.log.error({ err: error }, 'graceful shutdown failed');
+    logger.error({ err: error, signal }, 'shutdown failed');
     clearTimeout(timeout);
     process.exit(1);
   }
-};
-
+}
 process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
-
 try {
-  await app.listen({ host: env.HOST, port: env.PORT });
+  server = await application.listen();
+  logger.info({ host: env.HOST, port: env.PORT }, 'server started');
 } catch (error) {
-  app.log.error({ err: error }, 'server startup failed');
-  await db.end();
+  logger.error({ err: error }, 'server startup failed');
+  await disconnectDatabase();
   process.exit(1);
 }

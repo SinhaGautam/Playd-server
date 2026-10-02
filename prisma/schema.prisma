@@ -1,0 +1,273 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  engineType = "client"
+  runtime = "nodejs"
+  moduleFormat = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  active
+  suspended
+  deleted
+  @@map("user_status")
+}
+enum SportSkillLevel {
+  beginner
+  intermediate
+  advanced
+  @@map("sport_skill_level")
+}
+enum SwipeAction {
+  like
+  pass
+  @@map("swipe_action")
+}
+enum MatchStatus {
+  active
+  unmatched
+  @@map("match_status")
+}
+enum ReportStatus {
+  open
+  reviewed
+  dismissed
+  actioned
+  @@map("report_status")
+}
+enum SubscriptionStatus {
+  trial
+  active
+  past_due
+  cancelled
+  expired
+  @@map("subscription_status")
+}
+enum NotificationType {
+  match
+  message
+  system
+  @@map("notification_type")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique
+  passwordHash String @map("password_hash")
+  status UserStatus @default(active)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  profile UserProfile?
+  sports UserSport[]
+  preferences UserPreference?
+  swipesGiven Swipe[] @relation("SwipeActor")
+  swipesReceived Swipe[] @relation("SwipeTarget")
+  matchesA Match[] @relation("MatchUserA")
+  matchesB Match[] @relation("MatchUserB")
+  blocksGiven Block[] @relation("Blocker")
+  blocksReceived Block[] @relation("Blocked")
+  reportsGiven Report[] @relation("Reporter")
+  reportsReceived Report[] @relation("Reported")
+  conversationMembers ConversationMember[]
+  messages Message[]
+  coupons UserCoupon[]
+  subscriptions Subscription[]
+  notifications Notification[]
+  @@map("users")
+}
+
+model UserProfile {
+  userId String @id @map("user_id") @db.Uuid
+  displayName String @map("display_name")
+  bio String?
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  avatarUrl String? @map("avatar_url")
+  latitude Decimal? @db.Decimal(8,5)
+  longitude Decimal? @db.Decimal(8,5)
+  city String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_profiles")
+}
+
+model Sport {
+  id Int @id @default(autoincrement()) @db.SmallInt
+  slug String @unique
+  name String @unique
+  active Boolean @default(true)
+  users UserSport[]
+  @@map("sports")
+}
+
+model UserSport {
+  userId String @map("user_id") @db.Uuid
+  sportId Int @map("sport_id") @db.SmallInt
+  skillLevel SportSkillLevel @map("skill_level")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sport Sport @relation(fields: [sportId], references: [id], onDelete: Restrict)
+  @@id([userId, sportId])
+  @@map("user_sports")
+}
+
+model UserPreference {
+  userId String @id @map("user_id") @db.Uuid
+  minAge Int? @map("min_age") @db.SmallInt
+  maxAge Int? @map("max_age") @db.SmallInt
+  maxDistanceKm Decimal? @map("max_distance_km") @db.Decimal(6,2)
+  preferredCity String? @map("preferred_city")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_preferences")
+}
+
+model Swipe {
+  id BigInt @id @default(autoincrement()) @db.BigInt
+  actorUserId String @map("actor_user_id") @db.Uuid
+  targetUserId String @map("target_user_id") @db.Uuid
+  action SwipeAction
+  createdAt DateTime @default(now()) @map("created_at")
+  actor User @relation("SwipeActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+  target User @relation("SwipeTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  @@unique([actorUserId, targetUserId])
+  @@index([targetUserId, action])
+  @@map("swipes")
+}
+
+model Match {
+  id String @id @default(uuid()) @db.Uuid
+  userAId String @map("user_a_id") @db.Uuid
+  userBId String @map("user_b_id") @db.Uuid
+  status MatchStatus @default(active)
+  createdAt DateTime @default(now()) @map("created_at")
+  unmatchedAt DateTime? @map("unmatched_at")
+  userA User @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+  @@unique([userAId, userBId])
+  @@index([userAId, status])
+  @@index([userBId, status])
+  @@map("matches")
+}
+
+model Block {
+  blockerUserId String @map("blocker_user_id") @db.Uuid
+  blockedUserId String @map("blocked_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  blocker User @relation("Blocker", fields: [blockerUserId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  @@id([blockerUserId, blockedUserId])
+  @@index([blockedUserId])
+  @@map("blocks")
+}
+
+model Report {
+  id BigInt @id @default(autoincrement()) @db.BigInt
+  reporterUserId String @map("reporter_user_id") @db.Uuid
+  reportedUserId String @map("reported_user_id") @db.Uuid
+  reason String
+  details String?
+  status ReportStatus @default(open)
+  createdAt DateTime @default(now()) @map("created_at")
+  reviewedAt DateTime? @map("reviewed_at")
+  reporter User @relation("Reporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  reported User @relation("Reported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+model Conversation {
+  id String @id @default(uuid()) @db.Uuid
+  matchId String @unique @map("match_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  members ConversationMember[]
+  messages Message[]
+  @@map("conversations")
+}
+
+model ConversationMember {
+  conversationId String @map("conversation_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at")
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([conversationId, userId])
+  @@map("conversation_members")
+}
+
+model Message {
+  id BigInt @id @default(autoincrement()) @db.BigInt
+  conversationId String @map("conversation_id") @db.Uuid
+  senderUserId String @map("sender_user_id") @db.Uuid
+  body String
+  createdAt DateTime @default(now()) @map("created_at")
+  editedAt DateTime? @map("edited_at")
+  deletedAt DateTime? @map("deleted_at")
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderUserId], references: [id], onDelete: Restrict)
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Coupon {
+  id String @id @default(uuid()) @db.Uuid
+  code String @unique
+  description String?
+  durationDays Int @map("duration_days")
+  maxRedemptions Int? @map("max_redemptions")
+  redemptionCount Int @default(0) @map("redemption_count")
+  startsAt DateTime? @map("starts_at")
+  expiresAt DateTime? @map("expires_at")
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  userCoupons UserCoupon[]
+  @@map("coupons")
+}
+
+model UserCoupon {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  couponId String @map("coupon_id") @db.Uuid
+  redeemedAt DateTime @default(now()) @map("redeemed_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  @@unique([userId, couponId])
+  @@map("user_coupons")
+}
+
+model Subscription {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  status SubscriptionStatus
+  provider String?
+  providerSubscriptionId String? @map("provider_subscription_id")
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd DateTime? @map("current_period_end")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerSubscriptionId])
+  @@index([userId, status])
+  @@map("subscriptions")
+}
+
+model Notification {
+  id BigInt @id @default(autoincrement()) @db.BigInt
+  userId String @map("user_id") @db.Uuid
+  type NotificationType
+  title String
+  body String
+  readAt DateTime? @map("read_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@map("notifications")
+}

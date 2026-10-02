@@ -1,0 +1,1 @@
+import {z} from 'zod'; export const UserParamsSchema=z.object({userId:z.string().uuid()}); export const ReportSchema=z.object({reason:z.enum(['spam','harassment','inappropriate','fake_profile','other']),details:z.string().trim().max(2000).optional()}); export type ReportDto=z.infer<typeof ReportSchema>;

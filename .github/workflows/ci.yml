@@ -2,7 +2,6 @@ name: CI
 on:
   push:
   pull_request:
-
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -20,13 +19,17 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+    env:
+      DATABASE_URL: postgres://playd:playd@localhost:5432/playd
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install
+      - run: npm run prisma:validate
       - run: npm run lint
       - run: npm test
       - run: npm run build
       - run: npm run migrate
+      - run: npm run prisma:generate
