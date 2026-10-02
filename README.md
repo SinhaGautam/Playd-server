@@ -52,6 +52,6 @@ V1 includes users/profiles, sports and preferences, discovery swipes, matches, c
 - `GET /health/live` — process/liveness check.
 - `GET /health/ready` — PostgreSQL readiness check.
 
-## Architecture
+## API documentation\n\n- OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)\n- API guide: [docs/API.md](./docs/API.md)\n\n## Architecture
 
 V1 uses a modular-monolith structure designed for later extraction of independently scaling domains. See [ARCHITECTURE.md](./ARCHITECTURE.md).
