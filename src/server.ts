@@ -4,6 +4,7 @@ import { disconnectDatabase } from './infrastructure/database/prisma.js';
 import { logger } from './infrastructure/logging/logger.js';
 import type { Server } from 'node:http';
 import type { Application } from './infrastructure/http/application.js';
+import { attachChatWebSocket } from './modules/chat/chat.realtime.js';
 
 const application: Application = buildApp();
 let server: Server | undefined;
@@ -34,6 +35,7 @@ process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 try {
   server = await application.listen();
+  attachChatWebSocket(server);
   logger.info({ host: env.HOST, port: env.PORT }, 'server started');
 } catch (error) {
   logger.error({ err: error }, 'server startup failed');
