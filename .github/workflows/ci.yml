@@ -19,6 +19,8 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+    env:
+      DATABASE_URL: postgres://playd:playd@localhost:5432/playd
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
