@@ -29,7 +29,7 @@ export class Application {
   public async close(): Promise<void> {}
   public async inject(input: InjectRequest): Promise<InjectResponse> {
     const method=input.method.toLowerCase() as 'get'|'post'|'put'|'patch'|'delete';
-    const request=supertest(this.express)[method](input.url);
+    const agent=supertest(this.express); const request=method==='get'?agent.get(input.url):method==='post'?agent.post(input.url):method==='put'?agent.put(input.url):method==='patch'?agent.patch(input.url):agent.delete(input.url);
     if(input.headers) for(const [key,value] of Object.entries(input.headers)) request.set(key,value);
     if(input.payload!==undefined) request.send(input.payload);
     const response=await request;
