@@ -17,7 +17,9 @@
     "format": "prettier --write .",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:validate": "prisma validate --schema prisma/schema.prisma",
-    "migrate": "node dist/src/db/migrate.js"
+    "migrate": "node dist/src/db/migrate.js",
+    "backup:postgres": "scripts/backup-postgres.sh",
+    "restore:postgres": "scripts/restore-postgres.sh"
   },
   "dependencies": {
     "@prisma/adapter-pg": "6.19.3",
@@ -27,7 +29,8 @@
     "jose": "latest",
     "pg": "latest",
     "pino": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "ws": "8.18.3"
   },
   "devDependencies": {
     "@eslint/js": "latest",
@@ -44,6 +47,7 @@
     "tsx": "latest",
     "typescript": "latest",
     "typescript-eslint": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "@types/ws": "8.18.1"
   }
 }
