@@ -5,7 +5,7 @@ import { env } from '../../config/env.js';
 import { requestContextMiddleware, notFoundMiddleware, errorMiddleware } from '../../common/http/error.middleware.js';
 import { registerModules } from '../../modules/index.js';
 import { rateLimit } from '../../common/security/rate-limit.js';
-import { idempotency } from './idempotency.middleware.js';
+import { idempotency } from '../../common/http/idempotency.middleware.js';
 
 export interface InjectRequest {
   method: string;
