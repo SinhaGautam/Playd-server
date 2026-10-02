@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { billingRoutes } from './billing/billing.routes.js';
 import { safetyRoutes } from './safety/safety.routes.js';
 import { chatRoutes } from './chat/chat.routes.js';
 import { matchingRoutes } from './matching/matching.routes.js';
@@ -14,5 +15,6 @@ export async function registerModules(app: FastifyInstance): Promise<void> {
   await app.register(matchingRoutes);
   await app.register(chatRoutes);
   await app.register(safetyRoutes);
+  await app.register(billingRoutes);
   await app.register(usersRoutes);
 }
