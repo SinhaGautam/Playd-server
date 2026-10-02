@@ -1,9 +1,20 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { access, readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db } from './pool.js';
 
-const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), 'migrations');
+const distMigrationsDir = join(dirname(fileURLToPath(import.meta.url)), 'migrations');
+const sourceMigrationsDir = join(process.cwd(), 'src/db/migrations');
+
+async function getMigrationsDir(): Promise<string> {
+  try {
+    await access(distMigrationsDir);
+    return distMigrationsDir;
+  } catch {
+    await access(sourceMigrationsDir);
+    return sourceMigrationsDir;
+  }
+}
 
 async function ensureMigrationsTable(): Promise<void> {
   await db.query(`
@@ -20,6 +31,7 @@ export async function migrate(): Promise<void> {
   await db.query('SELECT pg_advisory_lock(hashtext($1))', ['playd:migrations']);
 
   try {
+    const migrationsDir = await getMigrationsDir();
     const files = (await readdir(migrationsDir))
       .filter((file) => file.endsWith('.sql'))
       .sort();
