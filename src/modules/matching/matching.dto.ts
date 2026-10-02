@@ -1,0 +1,1 @@
+import { z } from 'zod'; export const MatchParamsSchema=z.object({targetUserId:z.string().uuid()}); export type MatchParamsDto=z.infer<typeof MatchParamsSchema>; export interface MatchSummary{id:string;userId:string;displayName:string;avatarUrl:string|null;matchedAt:string;}
