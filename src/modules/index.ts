@@ -1,22 +1,17 @@
-import type { FastifyInstance } from 'fastify';
-import { notificationsRoutes } from './notifications/notifications.routes.js';
-import { billingRoutes } from './billing/billing.routes.js';
-import { safetyRoutes } from './safety/safety.routes.js';
-import { chatRoutes } from './chat/chat.routes.js';
-import { matchingRoutes } from './matching/matching.routes.js';
-import { discoveryRoutes } from './discovery/discovery.routes.js';
-import { authRoutes } from './auth/auth.routes.js';
-import { healthRoutes } from './health/health.routes.js';
-import { usersRoutes } from './users/users.routes.js';
+import type { Express } from 'express';
+import { BaseModule } from '../common/modules/base.module.js';
+import { healthRouter } from './health/health.routes.js';
+import { AuthModule } from './auth/auth.module.js';
+import { UsersModule } from './users/users.module.js';
+import { DiscoveryModule } from './discovery/discovery.module.js';
+import { MatchingModule } from './matching/matching.module.js';
+import { ChatModule } from './chat/chat.module.js';
+import { SafetyModule } from './safety/safety.module.js';
+import { BillingModule } from './billing/billing.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
-export async function registerModules(app: FastifyInstance): Promise<void> {
-  await app.register(healthRoutes);
-  await app.register(authRoutes);
-  await app.register(discoveryRoutes);
-  await app.register(matchingRoutes);
-  await app.register(chatRoutes);
-  await app.register(safetyRoutes);
-  await app.register(billingRoutes);
-  await app.register(notificationsRoutes);
-  await app.register(usersRoutes);
+export function registerModules(app:Express):void{
+  app.use(healthRouter());
+  const modules:BaseModule[]=[new AuthModule(),new UsersModule(),new DiscoveryModule(),new MatchingModule(),new ChatModule(),new SafetyModule(),new BillingModule(),new NotificationsModule()];
+  for(const module of modules) module.register(app);
 }
