@@ -19,8 +19,10 @@ describe('notifications', () => {
   it('requires authentication for marking notifications read', async () => {
     const app = buildApp();
     apps.push(app);
-    const response = await app.inject({ method: 'POST', url: '/v1/notifications/not-a-number/read' });
+    const response = await app.inject({
+      method: 'POST',
+      url: '/v1/notifications/not-a-number/read'
+    });
     expect(response.statusCode).toBe(401);
   });
-}
 });
