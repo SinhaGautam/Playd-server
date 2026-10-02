@@ -18,8 +18,7 @@ describe('authentication', () => {
     expect(response.statusCode).toBe(401);
     expect(response.json()).toMatchObject({
       success: false,
-      error: { code: 'UNAUTHORIZED',
-      message: 'Authentication required.'
+      error: { code: 'UNAUTHORIZED', message: 'Authentication required.' }
     });
   });
 
@@ -48,6 +47,6 @@ describe('authentication', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.json()).toMatchObject({ error: 'VALIDATION_ERROR' });
+    expect(response.json()).toMatchObject({ success: false, error: { code: 'VALIDATION_ERROR' } });
   });
 });
