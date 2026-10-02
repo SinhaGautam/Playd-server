@@ -1,9 +1,1 @@
-import { Router } from 'express';
-import { prisma } from '../../infrastructure/database/prisma.js';
-import { ApiResponse } from '../../common/http/api-response.js';
-export function healthRouter():Router{
- const router=Router();
- router.get('/health/live',(req,res)=>res.json(ApiResponse.success({status:'ok'},req.requestId)));
- router.get('/health/ready',async(req,res,next)=>{try{await prisma.$queryRaw`SELECT 1`;return res.json(ApiResponse.success({status:'ok',database:'ok'},req.requestId));}catch(error){next(error);}});
- return router;
-}
+import {Router} from 'express'; import {ApiResponse} from '../../common/http/api-response.js'; import {prisma} from '../../infrastructure/database/prisma.js'; export function healthRouter():Router{const r=Router();r.get('/health/live',(req,res)=>res.json(ApiResponse.success({status:'ok'},req.requestId)));r.get('/health/ready',async(req,res,next)=>{try{await prisma.user.count();return res.json(ApiResponse.success({status:'ok',database:'ok'},req.requestId));}catch(e){next(e);}});return r;}
