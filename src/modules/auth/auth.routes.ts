@@ -1,2 +1,4 @@
-import {Router} from 'express'; import {requireAuth} from './auth.middleware.js'; import type {AuthController} from './auth.controller.js';
-export function authRouter(c:AuthController):Router{const r=Router();r.post('/v1/auth/register',c.register);r.post('/v1/auth/login',c.login);r.post('/v1/auth/refresh',c.refresh);r.post('/v1/auth/logout',requireAuth,c.logout);r.post('/v1/auth/verify-email',c.verifyEmail);r.post('/v1/auth/forgot-password',c.requestReset);r.post('/v1/auth/reset-password',c.resetPassword);r.delete('/v1/auth/account',requireAuth,c.deleteAccount);return r;}
+import {Router} from 'express';
+import {rateLimit} from '../../common/security/rate-limit.js'; import {requireAuth} from './auth.middleware.js'; import type {AuthController} from './auth.controller.js';
+export function authRouter(c:AuthController):Router{const r=Router();const authLimit=rateLimit(20,15*60_000);
+ r.post('/v1/auth/register',authLimit,c.register);r.post('/v1/auth/login',authLimit,c.login);r.post('/v1/auth/refresh',c.refresh);r.post('/v1/auth/logout',requireAuth,c.logout);r.post('/v1/auth/verify-email',c.verifyEmail);r.post('/v1/auth/forgot-password',authLimit,c.requestReset);r.post('/v1/auth/reset-password',authLimit,c.resetPassword);r.delete('/v1/auth/account',requireAuth,c.deleteAccount);return r;}
