@@ -1,7 +1,3 @@
-import {Prisma} from '../../generated/prisma/client.js';
 import {prisma} from '../../infrastructure/database/prisma.js';
 import type {PaymentProviderSubscriptionEvent} from './payment-provider.js';
-export async function handleSubscriptionWebhook(event:PaymentProviderSubscriptionEvent){
- const exists=await prisma.webhookEvent.findUnique({where:{providerEventId:event.providerEventId}});if(exists)return;
- await prisma.$transaction(async tx=>{await tx.webhookEvent.create({data:{providerEventId:event.providerEventId,provider:event.provider,eventType:'subscription',payload:event as unknown as Prisma.InputJsonValue}});await tx.subscription.updateMany({where:{provider:event.provider,providerSubscriptionId:event.subscriptionId},data:{status:event.status,currentPeriodStart:event.periodStart,currentPeriodEnd:event.periodEnd}});});
-}
+export async function handleSubscriptionWebhook(event:PaymentProviderSubscriptionEvent){const exists=await prisma.webhookEvent.findUnique({where:{providerEventId:event.providerEventId}});if(exists)return;const payload={providerEventId:event.providerEventId,provider:event.provider,subscriptionId:event.subscriptionId,status:event.status,periodStart:event.periodStart?.toISOString(),periodEnd:event.periodEnd?.toISOString()};await prisma.$transaction(async tx=>{await tx.webhookEvent.create({data:{providerEventId:event.providerEventId,provider:event.provider,eventType:'subscription',payload}});await tx.subscription.updateMany({where:{provider:event.provider,providerSubscriptionId:event.subscriptionId},data:{status:event.status,currentPeriodStart:event.periodStart,currentPeriodEnd:event.periodEnd}});});}
