@@ -4,5 +4,6 @@ export class BillingService{
   public constructor(private readonly repository:BillingRepository){}
   public getSubscription(userId:string):Promise<SubscriptionResponse|null>{return this.repository.getSubscription(userId);}
   public redeem(userId:string,dto:CouponDto):Promise<SubscriptionResponse>{return this.repository.redeem(userId,dto);}
-  public cancel(userId:string):Promise<SubscriptionResponse>{return this.repository.cancel(userId);}\n  public cancel(userId:string):Promise<SubscriptionResponse>{return this.repository.cancel(userId);}
+  public cancel(userId:string):Promise<SubscriptionResponse>{return this.repository.cancel(userId);}
+  public cancel(userId:string):Promise<SubscriptionResponse>{return this.repository.cancel(userId);}
 }
