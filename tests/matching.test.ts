@@ -14,7 +14,7 @@ describe('matching', () => {
     apps.push(app);
     const response = await app.inject({ method: 'GET', url: '/v1/matches' });
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toMatchObject({ error: 'UNAUTHORIZED' });
+    expect(response.json()).toMatchObject({ success: false, error: { code: 'UNAUTHORIZED' } });
   });
 
   it('requires authentication for match creation', async () => {
