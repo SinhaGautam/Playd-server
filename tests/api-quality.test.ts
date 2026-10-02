@@ -1,0 +1,59 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { buildApp } from '../src/app.js';
+
+describe('API quality', () => {
+  const apps: ReturnType<typeof buildApp>[] = [];
+
+  afterEach(async () => {
+    await Promise.all(apps.map((app) => app.close()));
+    apps.length = 0;
+  });
+
+  it('returns standard API headers', async () => {
+    const app = buildApp();
+    apps.push(app);
+
+    const response = await app.inject({ method: 'GET', url: '/health/live' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['x-api-version']).toBe('1');
+    expect(response.headers['x-request-id']).toBeTruthy();
+    expect(response.headers['cache-control']).toBe('no-store');
+  });
+
+  it('returns a structured error for invalid JSON', async () => {
+    const app = buildApp();
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      headers: { 'content-type': 'application/json' },
+      payload: '{"email":'
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({
+      error: 'INVALID_JSON',
+      requestId: expect.any(String)
+    });
+  });
+
+  it('rejects oversized request bodies', async () => {
+    const app = buildApp();
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      headers: { 'content-type': 'application/json' },
+      payload: JSON.stringify({ email: 'a@example.com', password: 'a'.repeat(100_000) })
+    });
+
+    expect(response.statusCode).toBe(413);
+    expect(response.json()).toMatchObject({
+      error: 'PAYLOAD_TOO_LARGE',
+      requestId: expect.any(String)
+    });
+  });
+});
