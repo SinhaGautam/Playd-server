@@ -50,6 +50,12 @@ enum SubscriptionStatus {
   expired
   @@map("subscription_status")
 }
+enum UserRole {
+  user
+  admin
+  @@map("user_role")
+}
+
 enum NotificationType {
   match
   message
@@ -62,6 +68,8 @@ model User {
   email String @unique
   passwordHash String @map("password_hash")
   status UserStatus @default(active)
+  role UserRole @default(user)
+  emailVerifiedAt DateTime? @map("email_verified_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   profile UserProfile?
@@ -80,6 +88,11 @@ model User {
   coupons UserCoupon[]
   subscriptions Subscription[]
   notifications Notification[]
+  authSessions AuthSession[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs AuditLog[]
+  messageReads MessageRead[]
   @@map("users")
 }
 
@@ -213,6 +226,7 @@ model Message {
   deletedAt DateTime? @map("deleted_at")
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender User @relation(fields: [senderUserId], references: [id], onDelete: Restrict)
+  reads MessageRead[]
   @@index([conversationId, createdAt])
   @@map("messages")
 }
@@ -270,4 +284,76 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
   @@map("notifications")
+}
+model AuthSession {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+  @@map("auth_sessions")
+}
+model EmailVerificationToken {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+model PasswordResetToken {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+model AuditLog {
+  id BigInt @id @default(autoincrement()) @db.BigInt
+  userId String? @map("user_id") @db.Uuid
+  action String
+  targetType String @map("target_type")
+  targetId String? @map("target_id")
+  metadata Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+model IdempotencyKey {
+  key String @id
+  requestHash String @map("request_hash")
+  statusCode Int @default(200) @map("status_code")
+  responseBody Json @map("response_body")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("idempotency_keys")
+}
+model WebhookEvent {
+  providerEventId String @id @map("provider_event_id")
+  provider String
+  eventType String @map("event_type")
+  payload Json
+  receivedAt DateTime @default(now()) @map("received_at")
+  @@map("webhook_events")
+}
+model MessageRead {
+  messageId BigInt @map("message_id") @db.BigInt
+  userId String @map("user_id") @db.Uuid
+  readAt DateTime @default(now()) @map("read_at")
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([messageId, userId])
+  @@index([userId, readAt])
+  @@map("message_reads")
 }

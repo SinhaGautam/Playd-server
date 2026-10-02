@@ -6,7 +6,8 @@ Backend API for the PLAYD sports matching application.
 
 - Node.js 22+
 - TypeScript
-- Fastify
+- Express 5
+- Prisma 6.19.3
 - PostgreSQL
 - Docker / Docker Compose
 - Vitest
@@ -52,6 +53,10 @@ V1 includes users/profiles, sports and preferences, discovery swipes, matches, c
 - `GET /health/live` — process/liveness check.
 - `GET /health/ready` — PostgreSQL readiness check.
 
-## API documentation\n\n- OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)\n- API guide: [docs/API.md](./docs/API.md)\n\n## Architecture
+## API documentation\n\n- OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)\n- API guide: [docs/API.md](./docs/API.md)\n\n## Production operations
+
+See [docs/PRODUCTION.md](./docs/PRODUCTION.md) for backups, restore, monitoring, deployment, and PostgreSQL guidance.
+
+## Architecture
 
 V1 uses a modular-monolith structure designed for later extraction of independently scaling domains. See [ARCHITECTURE.md](./ARCHITECTURE.md).

@@ -3,10 +3,13 @@ import { env } from './config/env.js';
 import { disconnectDatabase } from './infrastructure/database/prisma.js';
 import { logger } from './infrastructure/logging/logger.js';
 import type { Server } from 'node:http';
+import type { WebSocketServer } from 'ws';
 import type { Application } from './infrastructure/http/application.js';
+import { attachChatWebSocket } from './modules/chat/chat.realtime.js';
 
 const application: Application = buildApp();
 let server: Server | undefined;
+let realtime: WebSocketServer | undefined;
 let shuttingDown = false;
 
 async function shutdown(signal: string): Promise<void> {
@@ -19,6 +22,7 @@ async function shutdown(signal: string): Promise<void> {
   }, env.SHUTDOWN_TIMEOUT_MS);
   timeout.unref();
   try {
+    if (realtime) realtime.close();
     if (server) await new Promise<void>((resolve, reject) => server!.close((error?: Error) => error ? reject(error) : resolve()));
     await disconnectDatabase();
     clearTimeout(timeout);
@@ -34,6 +38,7 @@ process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 try {
   server = await application.listen();
+  realtime = attachChatWebSocket(server);
   logger.info({ host: env.HOST, port: env.PORT }, 'server started');
 } catch (error) {
   logger.error({ err: error }, 'server startup failed');
