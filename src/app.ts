@@ -21,6 +21,9 @@ export function buildApp() {
 
   app.register(helmet);
   app.register(sensible);
+  app.addHook('onSend', async (request, reply) => {
+    reply.header('x-request-id', request.id);
+  });
   app.register(registerModules);
 
   app.setErrorHandler((error, request, reply) => {
