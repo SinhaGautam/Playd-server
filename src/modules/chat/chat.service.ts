@@ -115,5 +115,13 @@ export async function sendMessage(userId: string, conversationId: string, body: 
     [conversationId, userId, body.trim()]
   );
 
-  return result.rows[0]!;
+  const message = result.rows[0]!;
+  await db.query(
+    `INSERT INTO notifications (user_id, type, title, body)
+     SELECT cm.user_id, 'message', 'New message', LEFT($3, 120)
+     FROM conversation_members cm
+     WHERE cm.conversation_id = $1 AND cm.user_id <> $2`,
+    [conversationId, userId, message.body]
+  );
+  return message;
 }

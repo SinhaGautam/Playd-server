@@ -29,7 +29,13 @@ export async function createMatchIfMutualLike(actorUserId: string, targetUserId:
     );
 
     if (!mutual.rows[0]) {
-      await client.query('COMMIT');
+      await client.query(
+      `INSERT INTO notifications (user_id, type, title, body)
+       VALUES ($1, 'match', 'It''s a match!', 'You both liked each other.')`,
+      [targetUserId]
+    );
+
+    await client.query('COMMIT');
       return null;
     }
 
