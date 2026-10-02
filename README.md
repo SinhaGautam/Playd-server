@@ -30,6 +30,16 @@ npm test
 npm run build
 ```
 
+## Authentication
+
+V1 authentication uses scrypt password hashing and signed JWT access tokens. Password hashes and JWT secrets are never returned by API responses. Protected endpoints require `Authorization: Bearer <token>`.
+
+Implemented endpoints:
+- `POST /v1/auth/register`
+- `POST /v1/auth/login`
+- `GET /v1/users/me`
+- `PUT /v1/users/me/profile`
+
 ## Database
 
 Database schema is managed by ordered SQL migrations under `src/db/migrations`.
