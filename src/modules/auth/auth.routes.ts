@@ -1,3 +1,2 @@
-import {Router} from 'express';
-import type {AuthController} from './auth.controller.js';
-export function authRouter(controller:AuthController):Router{const router=Router();router.post('/v1/auth/register',controller.register);router.post('/v1/auth/login',controller.login);return router;}
+import {Router} from 'express'; import {requireAuth} from './auth.middleware.js'; import type {AuthController} from './auth.controller.js';
+export function authRouter(c:AuthController):Router{const r=Router();r.post('/v1/auth/register',c.register);r.post('/v1/auth/login',c.login);r.post('/v1/auth/refresh',c.refresh);r.post('/v1/auth/logout',requireAuth,c.logout);r.post('/v1/auth/verify-email',c.verifyEmail);r.post('/v1/auth/forgot-password',c.requestReset);r.post('/v1/auth/reset-password',c.resetPassword);r.delete('/v1/auth/account',requireAuth,c.deleteAccount);return r;}
