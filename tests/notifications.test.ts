@@ -23,3 +23,4 @@ describe('notifications', () => {
     expect(response.statusCode).toBe(401);
   });
 }
+});
