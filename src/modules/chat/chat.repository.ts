@@ -26,7 +26,18 @@ export class ChatRepository{
     const rows=await prisma.message.findMany({where:{conversationId,deletedAt:null,...(beforeId?{id:{lt:beforeId}}:{})},orderBy:{id:'desc'},take:limit});
     return rows.map(row=>({id:row.id.toString(),senderUserId:row.senderUserId,body:row.body,createdAt:row.createdAt.toISOString(),editedAt:row.editedAt?.toISOString()??null}));
   }
-  public async sendMessage(userId:string,conversationId:string,body:string):Promise<MessageResponse>{
+  public async markRead(userId:string,conversationId:string,messageId:bigint):Promise<void>{
+ await this.requireMember(userId,conversationId);
+ const message=await prisma.message.findFirst({where:{id:messageId,conversationId},select:{id:true}});
+ if(!message)throw new NotFoundException('MESSAGE_NOT_FOUND','Message not found.');
+ await prisma.messageRead.upsert({where:{messageId_userId:{messageId,userId}},create:{messageId,userId},update:{readAt:new Date()}});
+}
+ public async unreadCount(userId:string,conversationId:string):Promise<number>{
+ await this.requireMember(userId,conversationId);
+ const member=await prisma.conversationMember.findUnique({where:{conversationId_userId:{conversationId,userId}},select:{joinedAt:true}});
+ return prisma.message.count({where:{conversationId,senderUserId:{not:userId},createdAt:{gte:member?.joinedAt??new Date(0)},reads:{none:{userId}}}});
+}
+ public async sendMessage(userId:string,conversationId:string,body:string):Promise<MessageResponse>{
     await this.requireMember(userId,conversationId);
     const message=await prisma.$transaction(async tx=>{
       const created=await tx.message.create({data:{conversationId,senderUserId:userId,body:body.trim()}});
