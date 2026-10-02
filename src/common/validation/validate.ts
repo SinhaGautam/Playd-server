@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import { z } from 'zod';
-import { ValidationException } from '../..//core/errors.js';
+import { ValidationException } from '../../core/errors.js';
 
 export function parseBody<T extends z.ZodType>(schema: T, request: Request): z.infer<T> {
   const result = schema.safeParse(request.body);
