@@ -16,6 +16,7 @@ export function buildApp() {
     },
     trustProxy: env.TRUST_PROXY,
     requestIdHeader: 'x-request-id',
+    bodyLimit: 64 * 1024,
     disableRequestLogging: false
   });
 
@@ -23,6 +24,8 @@ export function buildApp() {
   app.register(sensible);
   app.addHook('onSend', async (request, reply) => {
     reply.header('x-request-id', request.id);
+    reply.header('x-api-version', '1');
+    reply.header('cache-control', 'no-store');
   });
   app.register(registerModules);
 
@@ -36,6 +39,24 @@ export function buildApp() {
         ...(error.details === undefined ? {} : { details: error.details }),
         requestId: request.id
       });
+    }
+
+    if (error && typeof error === 'object' && 'code' in error) {
+      const code = String((error as { code?: unknown }).code);
+      if (code === 'FST_ERR_CTP_INVALID_JSON_BODY') {
+        return reply.code(400).send({
+          error: 'INVALID_JSON',
+          message: 'Request body contains invalid JSON.',
+          requestId: request.id
+        });
+      }
+      if (code === 'FST_ERR_CTP_BODY_TOO_LARGE') {
+        return reply.code(413).send({
+          error: 'PAYLOAD_TOO_LARGE',
+          message: 'Request body is too large.',
+          requestId: request.id
+        });
+      }
     }
 
     return reply.code(500).send({
