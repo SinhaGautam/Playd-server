@@ -9,7 +9,9 @@ const schema = z.object({
   DB_POOL_MAX: z.coerce.number().int().min(1).max(100).default(20),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   TRUST_PROXY: z.coerce.boolean().default(true),
-  SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000)
+  SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(10000),
+  JWT_SECRET: z.string().min(32).default('dev-only-change-this-secret-before-production'),
+  JWT_EXPIRES_IN: z.string().default('7d')
 });
 
 export const env = schema.parse(process.env);
