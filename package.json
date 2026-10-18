@@ -40,7 +40,6 @@
     "@types/node": "latest",
     "@types/pg": "latest",
     "@types/supertest": "latest",
-    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "eslint": "latest",
@@ -51,6 +50,8 @@
     "typescript": "latest",
     "typescript-eslint": "latest",
     "vitest": "latest",
-    "@types/ws": "8.18.1"
+    "@types/ws": "8.18.1",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/yaml": "^1.9.7"
   }
 }
