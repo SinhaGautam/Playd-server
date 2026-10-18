@@ -3,6 +3,7 @@
 Backend API for the PLAYD sports matching application.
 
 ## Stack
+
 - Node.js 22+
 - TypeScript
 - Express 5
@@ -12,6 +13,7 @@ Backend API for the PLAYD sports matching application.
 - Vitest
 
 ## Local development
+
 1. Copy `.env.example` to `.env`.
 2. Start PostgreSQL with `docker compose up -d postgres`.
 3. Install dependencies with `npm install`.
@@ -22,6 +24,7 @@ Backend API for the PLAYD sports matching application.
 The API listens on port 3000 by default.
 
 ## Quality checks
+
 ```bash
 npm run lint
 npm test
@@ -29,6 +32,7 @@ npm run build
 ```
 
 ## Authentication
+
 V1 authentication uses scrypt password hashing and signed JWT access tokens. Password hashes and JWT secrets are never returned by API responses. Protected endpoints require `Authorization: Bearer <token>`.
 
 Implemented endpoints:
@@ -38,16 +42,19 @@ Implemented endpoints:
 - `PUT /v1/users/me/profile`
 
 ## Database
+
 Database schema is managed by ordered SQL migrations under `src/db/migrations`.
 Run `npm run migrate` after building. Migrations are applied transactionally and protected by a PostgreSQL advisory lock.
 
 V1 includes users/profiles, sports and preferences, discovery swipes, matches, chat, moderation, coupons, subscriptions, and notifications.
 
 ## Health endpoints
+
 - `GET /health/live` — process/liveness check.
 - `GET /health/ready` — PostgreSQL readiness check.
 
 ## API documentation
+
 - Interactive Swagger UI: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 - OpenAPI JSON: [http://localhost:3000/api-docs.json](http://localhost:3000/api-docs.json)
 - OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)
@@ -55,7 +62,9 @@ V1 includes users/profiles, sports and preferences, discovery swipes, matches, c
 - Swagger usage notes: [docs/SWAGGER.md](./docs/SWAGGER.md)
 
 ## Production operations
+
 See [docs/PRODUCTION.md](./docs/PRODUCTION.md) for backups, restore, monitoring, deployment, and PostgreSQL guidance.
 
 ## Architecture
+
 V1 uses a modular-monolith structure designed for later extraction of independently scaling domains. See [ARCHITECTURE.md](./ARCHITECTURE.md).
