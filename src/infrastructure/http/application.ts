@@ -12,7 +12,8 @@ import { registerModules } from "../../modules/index.js";
 import { rateLimit } from "../../common/security/rate-limit.js";
 import { idempotency } from "../../common/http/idempotency.middleware.js";
 import { connectDatabase } from "../database/prisma.js";
-import openApiDocument from "../../../docs/openapi.json" with { type: "json" };
+import { readFileSync } from "node:fs";
+import { parse as parseYaml } from "yaml";
 
 export interface InjectRequest {
   method: string;
@@ -38,6 +39,11 @@ export class Application {
     this.express.use(express.json({ limit: "64kb" }));
     this.express.use(rateLimit(300, 60_000));
     this.express.use(idempotency());
+
+    // Load the existing OpenAPI YAML as the single source of truth for Swagger UI.
+    const openApiDocument = parseYaml(
+      readFileSync(new URL("../../../docs/openapi.yaml", import.meta.url), "utf8"),
+    );
 
     // Only expose interactive API documentation when explicitly enabled.
     if (env.SWAGGER_UI_ENABLED) {
