@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS playd;
+SET search_path TO playd, public;
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE user_status AS ENUM ('active', 'suspended', 'deleted');

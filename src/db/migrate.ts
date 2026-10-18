@@ -18,8 +18,9 @@ async function getMigrationsDir() {
   }
 }
 async function ensureMigrationsTable() {
+  await db.query("CREATE SCHEMA IF NOT EXISTS playd");
   await db.query(
-    `CREATE TABLE IF NOT EXISTS schema_migrations (id BIGSERIAL PRIMARY KEY,filename TEXT NOT NULL UNIQUE,applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS playd.schema_migrations (id BIGSERIAL PRIMARY KEY,filename TEXT NOT NULL UNIQUE,applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
   );
 }
 export async function migrate(): Promise<void> {
@@ -31,7 +32,7 @@ export async function migrate(): Promise<void> {
       .filter((file) => file.endsWith(".sql"))
       .sort();
     const appliedResult = await db.query<{ filename: string }>(
-      "SELECT filename FROM schema_migrations ORDER BY filename",
+      "SELECT filename FROM playd.schema_migrations ORDER BY filename",
     );
     const applied = new Set(appliedResult.rows.map((row) => row.filename));
     for (const filename of files) {
@@ -40,9 +41,10 @@ export async function migrate(): Promise<void> {
       const client = await db.connect();
       try {
         await client.query("BEGIN");
+        await client.query("SET LOCAL search_path TO playd, public");
         await client.query(sql);
         await client.query(
-          "INSERT INTO schema_migrations (filename) VALUES ($1)",
+          "INSERT INTO playd.schema_migrations (filename) VALUES ($1)",
           [filename],
         );
         await client.query("COMMIT");
