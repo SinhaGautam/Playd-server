@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import type { IncomingHttpHeaders, Server } from "node:http";
 import supertest from "supertest";
+import swaggerUi from "swagger-ui-express";
 import { env } from "../../config/env.js";
 import {
   requestContextMiddleware,
@@ -11,6 +12,7 @@ import { registerModules } from "../../modules/index.js";
 import { rateLimit } from "../../common/security/rate-limit.js";
 import { idempotency } from "../../common/http/idempotency.middleware.js";
 import { connectDatabase } from "../database/prisma.js";
+import openApiDocument from "../../../docs/openapi.json" with { type: "json" };
 
 export interface InjectRequest {
   method: string;
@@ -36,6 +38,23 @@ export class Application {
     this.express.use(express.json({ limit: "64kb" }));
     this.express.use(rateLimit(300, 60_000));
     this.express.use(idempotency());
+
+    // Only expose interactive API documentation when explicitly enabled.
+    if (env.SWAGGER_UI_ENABLED) {
+      this.express.get("/api-docs.json", (_req, res) =>
+        res.status(200).json(openApiDocument),
+      );
+      this.express.use(
+        "/api-docs",
+        swaggerUi.serve,
+        swaggerUi.setup(openApiDocument, {
+          explorer: true,
+          customSiteTitle: "PLAYD API — Swagger UI",
+          swaggerOptions: { persistAuthorization: false },
+        }),
+      );
+    }
+
     registerModules(this.express);
     this.express.use(notFoundMiddleware);
     this.express.use(errorMiddleware);
@@ -59,7 +78,11 @@ export class Application {
 
   public async inject(input: InjectRequest): Promise<InjectResponse> {
     const method = input.method.toLowerCase() as
-      "get" | "post" | "put" | "patch" | "delete";
+      | "get"
+      | "post"
+      | "put"
+      | "patch"
+      | "delete";
     const agent = supertest(this.express);
     const request =
       method === "get"
