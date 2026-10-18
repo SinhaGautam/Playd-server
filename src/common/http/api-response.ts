@@ -19,11 +19,16 @@ export class ApiResponse {
     return { success: true, data, meta: { requestId } };
   }
 
-  public static error(code: string, message: string, requestId: string, details?: unknown): ApiErrorResponse {
+  public static error(
+    code: string,
+    message: string,
+    requestId: string,
+    details?: unknown,
+  ): ApiErrorResponse {
     return {
       success: false,
       error: { code, message, ...(details === undefined ? {} : { details }) },
-      meta: { requestId }
+      meta: { requestId },
     };
   }
 }

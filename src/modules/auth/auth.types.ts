@@ -1,1 +1,6 @@
-export interface AuthenticatedUser{id:string;email:string;status:'active'|'suspended'|'deleted';role:'user'|'admin';}
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  status: "active" | "suspended" | "deleted";
+  role: "user" | "admin";
+}

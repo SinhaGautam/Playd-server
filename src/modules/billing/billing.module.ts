@@ -1,2 +1,17 @@
-import type {Express} from 'express'; import {BaseModule} from '../../common/modules/base.module.js'; import {BillingController} from './billing.controller.js'; import {BillingRepository} from './billing.repository.js'; import {BillingService} from './billing.service.js'; import {billingRouter} from './billing.routes.js'; import {BillingWebhookController} from './webhook.controller.js'; import {billingWebhookRouter} from './webhook.routes.js';
-export class BillingModule extends BaseModule{public register(app:Express):void{const repository=new BillingRepository();app.use(billingRouter(new BillingController(new BillingService(repository))));app.use(billingWebhookRouter(new BillingWebhookController()));}}
+import type { Express } from "express";
+import { BaseModule } from "../../common/modules/base.module.js";
+import { BillingController } from "./billing.controller.js";
+import { BillingRepository } from "./billing.repository.js";
+import { BillingService } from "./billing.service.js";
+import { billingRouter } from "./billing.routes.js";
+import { BillingWebhookController } from "./webhook.controller.js";
+import { billingWebhookRouter } from "./webhook.routes.js";
+export class BillingModule extends BaseModule {
+  public register(app: Express): void {
+    const repository = new BillingRepository();
+    app.use(
+      billingRouter(new BillingController(new BillingService(repository))),
+    );
+    app.use(billingWebhookRouter(new BillingWebhookController()));
+  }
+}

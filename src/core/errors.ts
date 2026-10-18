@@ -5,9 +5,14 @@ export class AppException extends Error {
   public readonly code: string;
   public readonly details?: ErrorDetails;
 
-  public constructor(code: string, message: string, statusCode = 500, details?: ErrorDetails) {
+  public constructor(
+    code: string,
+    message: string,
+    statusCode = 500,
+    details?: ErrorDetails,
+  ) {
     super(message);
-    this.name = 'AppException';
+    this.name = "AppException";
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;
@@ -16,25 +21,33 @@ export class AppException extends Error {
 }
 
 export class ValidationException extends AppException {
-  public constructor(message = 'Validation failed.', details?: ErrorDetails) {
-    super('VALIDATION_ERROR', message, 400, details);
+  public constructor(message = "Validation failed.", details?: ErrorDetails) {
+    super("VALIDATION_ERROR", message, 400, details);
   }
 }
 
 export class UnauthorizedException extends AppException {
-  public constructor(message = 'Authentication required.') { super('UNAUTHORIZED', message, 401); }
+  public constructor(message = "Authentication required.") {
+    super("UNAUTHORIZED", message, 401);
+  }
 }
 
 export class ForbiddenException extends AppException {
-  public constructor(message = 'Access denied.') { super('FORBIDDEN', message, 403); }
+  public constructor(message = "Access denied.") {
+    super("FORBIDDEN", message, 403);
+  }
 }
 
 export class NotFoundException extends AppException {
-  public constructor(code: string, message: string) { super(code, message, 404); }
+  public constructor(code: string, message: string) {
+    super(code, message, 404);
+  }
 }
 
 export class ConflictException extends AppException {
-  public constructor(code: string, message: string) { super(code, message, 409); }
+  public constructor(code: string, message: string) {
+    super(code, message, 409);
+  }
 }
 
 export function isAppException(error: unknown): error is AppException {
