@@ -147,7 +147,7 @@ export class ChatRepository {
       });
       if (members.length)
         await tx.notification.createMany({
-          data: members.map((member: { userId: any }) => ({
+          data: members.map((member) => ({
             userId: member.userId,
             type: "message" as const,
             title: "New message",
