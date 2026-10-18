@@ -53,7 +53,15 @@ V1 includes users/profiles, sports and preferences, discovery swipes, matches, c
 - `GET /health/live` — process/liveness check.
 - `GET /health/ready` — PostgreSQL readiness check.
 
-## API documentation\n\n- OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)\n- API guide: [docs/API.md](./docs/API.md)\n\n## Production operations
+## API documentation
+
+- Interactive Swagger UI: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- OpenAPI JSON: [http://localhost:3000/api-docs.json](http://localhost:3000/api-docs.json)
+- OpenAPI specification: [docs/openapi.yaml](./docs/openapi.yaml)
+- API guide: [docs/API.md](./docs/API.md)
+- Swagger usage notes: [docs/SWAGGER.md](./docs/SWAGGER.md)
+
+## Production operations
 
 See [docs/PRODUCTION.md](./docs/PRODUCTION.md) for backups, restore, monitoring, deployment, and PostgreSQL guidance.
 
