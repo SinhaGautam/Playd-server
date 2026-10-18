@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url = env("DATABASE_URL")
+  schemas = ["playd"]
 }
 
 enum UserStatus {
@@ -18,22 +19,26 @@ enum UserStatus {
   suspended
   deleted
   @@map("user_status")
+  @@schema("playd")
 }
 enum SportSkillLevel {
   beginner
   intermediate
   advanced
   @@map("sport_skill_level")
+  @@schema("playd")
 }
 enum SwipeAction {
   like
   pass
   @@map("swipe_action")
+  @@schema("playd")
 }
 enum MatchStatus {
   active
   unmatched
   @@map("match_status")
+  @@schema("playd")
 }
 enum ReportStatus {
   open
@@ -41,6 +46,7 @@ enum ReportStatus {
   dismissed
   actioned
   @@map("report_status")
+  @@schema("playd")
 }
 enum SubscriptionStatus {
   trial
@@ -49,11 +55,13 @@ enum SubscriptionStatus {
   cancelled
   expired
   @@map("subscription_status")
+  @@schema("playd")
 }
 enum UserRole {
   user
   admin
   @@map("user_role")
+  @@schema("playd")
 }
 
 enum NotificationType {
@@ -61,6 +69,7 @@ enum NotificationType {
   message
   system
   @@map("notification_type")
+  @@schema("playd")
 }
 
 model User {
@@ -94,6 +103,7 @@ model User {
   auditLogs AuditLog[]
   messageReads MessageRead[]
   @@map("users")
+  @@schema("playd")
 }
 
 model UserProfile {
@@ -109,6 +119,7 @@ model UserProfile {
   updatedAt DateTime @updatedAt @map("updated_at")
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("user_profiles")
+  @@schema("playd")
 }
 
 model Sport {
@@ -118,6 +129,7 @@ model Sport {
   active Boolean @default(true)
   users UserSport[]
   @@map("sports")
+  @@schema("playd")
 }
 
 model UserSport {
@@ -128,6 +140,7 @@ model UserSport {
   sport Sport @relation(fields: [sportId], references: [id], onDelete: Restrict)
   @@id([userId, sportId])
   @@map("user_sports")
+  @@schema("playd")
 }
 
 model UserPreference {
@@ -139,6 +152,7 @@ model UserPreference {
   updatedAt DateTime @updatedAt @map("updated_at")
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("user_preferences")
+  @@schema("playd")
 }
 
 model Swipe {
@@ -152,6 +166,7 @@ model Swipe {
   @@unique([actorUserId, targetUserId])
   @@index([targetUserId, action])
   @@map("swipes")
+  @@schema("playd")
 }
 
 model Match {
@@ -168,6 +183,7 @@ model Match {
   @@index([userAId, status])
   @@index([userBId, status])
   @@map("matches")
+  @@schema("playd")
 }
 
 model Block {
@@ -179,6 +195,7 @@ model Block {
   @@id([blockerUserId, blockedUserId])
   @@index([blockedUserId])
   @@map("blocks")
+  @@schema("playd")
 }
 
 model Report {
@@ -194,6 +211,7 @@ model Report {
   reported User @relation("Reported", fields: [reportedUserId], references: [id], onDelete: Cascade)
   @@index([status, createdAt])
   @@map("reports")
+  @@schema("playd")
 }
 
 model Conversation {
@@ -204,6 +222,7 @@ model Conversation {
   members ConversationMember[]
   messages Message[]
   @@map("conversations")
+  @@schema("playd")
 }
 
 model ConversationMember {
@@ -214,6 +233,7 @@ model ConversationMember {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([conversationId, userId])
   @@map("conversation_members")
+  @@schema("playd")
 }
 
 model Message {
@@ -229,6 +249,7 @@ model Message {
   reads MessageRead[]
   @@index([conversationId, createdAt])
   @@map("messages")
+  @@schema("playd")
 }
 
 model Coupon {
@@ -244,6 +265,7 @@ model Coupon {
   createdAt DateTime @default(now()) @map("created_at")
   userCoupons UserCoupon[]
   @@map("coupons")
+  @@schema("playd")
 }
 
 model UserCoupon {
@@ -255,6 +277,7 @@ model UserCoupon {
   coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
   @@unique([userId, couponId])
   @@map("user_coupons")
+  @@schema("playd")
 }
 
 model Subscription {
@@ -271,6 +294,7 @@ model Subscription {
   @@unique([provider, providerSubscriptionId])
   @@index([userId, status])
   @@map("subscriptions")
+  @@schema("playd")
 }
 
 model Notification {
@@ -284,6 +308,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
   @@map("notifications")
+  @@schema("playd")
 }
 model AuthSession {
   id String @id @default(uuid()) @db.Uuid
@@ -295,6 +320,7 @@ model AuthSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, expiresAt])
   @@map("auth_sessions")
+  @@schema("playd")
 }
 model EmailVerificationToken {
   id String @id @default(uuid()) @db.Uuid
@@ -306,6 +332,7 @@ model EmailVerificationToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
   @@map("email_verification_tokens")
+  @@schema("playd")
 }
 model PasswordResetToken {
   id String @id @default(uuid()) @db.Uuid
@@ -317,6 +344,7 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
   @@map("password_reset_tokens")
+  @@schema("playd")
 }
 model AuditLog {
   id BigInt @id @default(autoincrement()) @db.BigInt
@@ -330,6 +358,7 @@ model AuditLog {
   @@index([createdAt])
   @@index([userId, createdAt])
   @@map("audit_logs")
+  @@schema("playd")
 }
 model IdempotencyKey {
   key String @id
@@ -338,6 +367,7 @@ model IdempotencyKey {
   responseBody Json @map("response_body")
   createdAt DateTime @default(now()) @map("created_at")
   @@map("idempotency_keys")
+  @@schema("playd")
 }
 model WebhookEvent {
   providerEventId String @id @map("provider_event_id")
@@ -346,6 +376,7 @@ model WebhookEvent {
   payload Json
   receivedAt DateTime @default(now()) @map("received_at")
   @@map("webhook_events")
+  @@schema("playd")
 }
 model MessageRead {
   messageId BigInt @map("message_id") @db.BigInt
@@ -356,4 +387,5 @@ model MessageRead {
   @@id([messageId, userId])
   @@index([userId, readAt])
   @@map("message_reads")
+  @@schema("playd")
 }
