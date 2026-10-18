@@ -19,7 +19,7 @@ const schema = z
       if (value === undefined) return swaggerEnabledDefault;
       if (typeof value === "boolean") return value;
       return String(value).toLowerCase() === "true";
-    }, z.boolean()).default(swaggerEnabledDefault),
+    }, z.boolean()),
   })
   .superRefine((value, ctx) => {
     if (
