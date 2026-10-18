@@ -43,7 +43,7 @@ export class Application {
     // Load the existing OpenAPI YAML as the single source of truth for Swagger UI.
     const openApiDocument = parseYaml(
       readFileSync(new URL("../../../docs/openapi.yaml", import.meta.url), "utf8"),
-    );
+    ) as Record<string, unknown>;
 
     // Only expose interactive API documentation when explicitly enabled.
     if (env.SWAGGER_UI_ENABLED) {
