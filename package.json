@@ -30,7 +30,8 @@
     "pg": "latest",
     "pino": "latest",
     "zod": "latest",
-    "ws": "8.18.3"
+    "ws": "8.18.3",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "latest",
@@ -38,6 +39,7 @@
     "@types/node": "latest",
     "@types/pg": "latest",
     "@types/supertest": "latest",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "eslint": "latest",
