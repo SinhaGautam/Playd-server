@@ -40,9 +40,10 @@ export class Application {
     this.express.use(rateLimit(300, 60_000));
     this.express.use(idempotency());
 
-    // Load the existing OpenAPI YAML as the single source of truth for Swagger UI.
+    // Load the OpenAPI file from the repository root when running from src or dist.
+    const openApiPath = new URL("../../../docs/openapi.yaml", import.meta.url);
     const openApiDocument = parseYaml(
-      readFileSync(new URL("../../../docs/openapi.yaml", import.meta.url), "utf8"),
+      readFileSync(openApiPath, "utf8"),
     ) as Record<string, unknown>;
 
     // Only expose interactive API documentation when explicitly enabled.
