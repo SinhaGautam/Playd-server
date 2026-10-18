@@ -31,7 +31,8 @@
     "pino": "latest",
     "zod": "latest",
     "ws": "8.18.3",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@eslint/js": "latest",
