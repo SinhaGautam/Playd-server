@@ -13,4 +13,4 @@ Swagger UI is enabled by default outside production. Set `SWAGGER_UI_ENABLED=tru
 3. Call public register/login endpoints first to obtain an access token.
 4. Click **Authorize**, paste the JWT access token, and try protected routes.
 
-The maintained specification is `docs/openapi.yaml`; `docs/openapi.json` is the JSON document consumed by Swagger UI. Keep the two in sync when changing endpoint contracts.
+The API serves its maintained `docs/openapi.yaml` file directly, so Swagger UI uses the same specification as the repository documentation. Keep it updated whenever API routes or request/response contracts change.
