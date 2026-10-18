@@ -1,1 +1,9 @@
-import {Router} from 'express'; import {requireAuth} from '../auth/auth.middleware.js'; import type {DiscoveryController} from './discovery.controller.js'; export function discoveryRouter(controller:DiscoveryController):Router{const router=Router();router.get('/v1/discovery',requireAuth,controller.discover);router.post('/v1/discovery/swipes',requireAuth,controller.swipe);return router;}
+import { Router } from "express";
+import { requireAuth } from "../auth/auth.middleware.js";
+import type { DiscoveryController } from "./discovery.controller.js";
+export function discoveryRouter(controller: DiscoveryController): Router {
+  const router = Router();
+  router.get("/v1/discovery", requireAuth, controller.discover);
+  router.post("/v1/discovery/swipes", requireAuth, controller.swipe);
+  return router;
+}

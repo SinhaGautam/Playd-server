@@ -1,4 +1,106 @@
-import type {DiscoveryQueryDto,SwipeDto} from './discovery.dto.js'; import type {DiscoveryRepository} from './discovery.repository.js';
-function age(date:Date):number{const now=new Date();let value=now.getUTCFullYear()-date.getUTCFullYear();const month=now.getUTCMonth()-date.getUTCMonth();if(month<0||(month===0&&now.getUTCDate()<date.getUTCDate()))value--;return value;}
-function distanceKm(aLat:number,aLon:number,bLat:number,bLon:number):number{const r=Math.PI/180;const dLat=(bLat-aLat)*r;const dLon=(bLon-aLon)*r;const x=Math.sin(dLat/2)**2+Math.cos(aLat*r)*Math.cos(bLat*r)*Math.sin(dLon/2)**2;return 6371*2*Math.asin(Math.sqrt(x));}
-export class DiscoveryService{public constructor(private readonly repository:DiscoveryRepository){}public async discover(actorUserId:string,query:DiscoveryQueryDto){const preferences=await this.repository.getPreferences(actorUserId);const actorLat=preferences?.user.profile?.latitude?.toNumber()??null;const actorLon=preferences?.user.profile?.longitude?.toNumber()??null;const candidates=await this.repository.findCandidates(actorUserId,query);return candidates.map(candidate=>{const profile=candidate.profile!;const distance=actorLat!==null&&actorLon!==null&&profile.latitude!==null&&profile.longitude!==null?distanceKm(actorLat,actorLon,profile.latitude.toNumber(),profile.longitude.toNumber()):null;return{userId:candidate.id,displayName:profile.displayName,bio:profile.bio,dateOfBirth:profile.dateOfBirth?.toISOString().slice(0,10)??null,avatarUrl:profile.avatarUrl,city:profile.city,sports:candidate.sports.map(item=>({slug:item.sport.slug,name:item.sport.name,skillLevel:item.skillLevel})),distanceKm:distance};}).filter(candidate=>{const dob=candidate.dateOfBirth?new Date(candidate.dateOfBirth):null;const userAge=dob?age(dob):null;if(preferences?.minAge!==null&&preferences?.minAge!==undefined&&userAge!==null&&userAge<preferences.minAge)return false;if(preferences?.maxAge!==null&&preferences?.maxAge!==undefined&&userAge!==null&&userAge>preferences.maxAge)return false;if(preferences?.preferredCity&&candidate.city&&candidate.city.toLowerCase()!==preferences.preferredCity.toLowerCase())return false;if(preferences?.maxDistanceKm&&candidate.distanceKm!==null&&candidate.distanceKm>preferences.maxDistanceKm.toNumber())return false;return true;}).sort((a,b)=>(a.distanceKm??Number.POSITIVE_INFINITY)-(b.distanceKm??Number.POSITIVE_INFINITY)).slice(0,query.limit);}public swipe(actorUserId:string,dto:SwipeDto){return this.repository.recordSwipe(actorUserId,dto);}}
+import type { DiscoveryQueryDto, SwipeDto } from "./discovery.dto.js";
+import type { DiscoveryRepository } from "./discovery.repository.js";
+function age(date: Date): number {
+  const now = new Date();
+  let value = now.getUTCFullYear() - date.getUTCFullYear();
+  const month = now.getUTCMonth() - date.getUTCMonth();
+  if (month < 0 || (month === 0 && now.getUTCDate() < date.getUTCDate()))
+    value--;
+  return value;
+}
+function distanceKm(
+  aLat: number,
+  aLon: number,
+  bLat: number,
+  bLon: number,
+): number {
+  const r = Math.PI / 180;
+  const dLat = (bLat - aLat) * r;
+  const dLon = (bLon - aLon) * r;
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.asin(Math.sqrt(x));
+}
+export class DiscoveryService {
+  public constructor(private readonly repository: DiscoveryRepository) {}
+  public async discover(actorUserId: string, query: DiscoveryQueryDto) {
+    const preferences = await this.repository.getPreferences(actorUserId);
+    const actorLat = preferences?.user.profile?.latitude?.toNumber() ?? null;
+    const actorLon = preferences?.user.profile?.longitude?.toNumber() ?? null;
+    const candidates = await this.repository.findCandidates(actorUserId, query);
+    return candidates
+      .map((candidate) => {
+        const profile = candidate.profile!;
+        const distance =
+          actorLat !== null &&
+          actorLon !== null &&
+          profile.latitude !== null &&
+          profile.longitude !== null
+            ? distanceKm(
+                actorLat,
+                actorLon,
+                profile.latitude.toNumber(),
+                profile.longitude.toNumber(),
+              )
+            : null;
+        return {
+          userId: candidate.id,
+          displayName: profile.displayName,
+          bio: profile.bio,
+          dateOfBirth: profile.dateOfBirth?.toISOString().slice(0, 10) ?? null,
+          avatarUrl: profile.avatarUrl,
+          city: profile.city,
+          sports: candidate.sports.map((item) => ({
+            slug: item.sport.slug,
+            name: item.sport.name,
+            skillLevel: item.skillLevel,
+          })),
+          distanceKm: distance,
+        };
+      })
+      .filter((candidate) => {
+        const dob = candidate.dateOfBirth
+          ? new Date(candidate.dateOfBirth)
+          : null;
+        const userAge = dob ? age(dob) : null;
+        if (
+          preferences?.minAge !== null &&
+          preferences?.minAge !== undefined &&
+          userAge !== null &&
+          userAge < preferences.minAge
+        )
+          return false;
+        if (
+          preferences?.maxAge !== null &&
+          preferences?.maxAge !== undefined &&
+          userAge !== null &&
+          userAge > preferences.maxAge
+        )
+          return false;
+        if (
+          preferences?.preferredCity &&
+          candidate.city &&
+          candidate.city.toLowerCase() !==
+            preferences.preferredCity.toLowerCase()
+        )
+          return false;
+        if (
+          preferences?.maxDistanceKm &&
+          candidate.distanceKm !== null &&
+          candidate.distanceKm > preferences.maxDistanceKm.toNumber()
+        )
+          return false;
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          (a.distanceKm ?? Number.POSITIVE_INFINITY) -
+          (b.distanceKm ?? Number.POSITIVE_INFINITY),
+      )
+      .slice(0, query.limit);
+  }
+  public swipe(actorUserId: string, dto: SwipeDto) {
+    return this.repository.recordSwipe(actorUserId, dto);
+  }
+}

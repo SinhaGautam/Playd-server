@@ -1,1 +1,11 @@
-import {z} from 'zod'; export const CouponSchema=z.object({code:z.string().trim().min(1).max(100)}); export type CouponDto=z.infer<typeof CouponSchema>; export interface SubscriptionResponse{id:string;status:string;currentPeriodStart:string|null;currentPeriodEnd:string|null;}
+import { z } from "zod";
+export const CouponSchema = z.object({
+  code: z.string().trim().min(1).max(100),
+});
+export type CouponDto = z.infer<typeof CouponSchema>;
+export interface SubscriptionResponse {
+  id: string;
+  status: string;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+}
