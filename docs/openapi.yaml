@@ -86,7 +86,36 @@ paths:
       tags: [Users]
       summary: List active sports and supported skill levels
       responses:
-        "200": { description: Active sports catalogue and skill levels }
+        "200":
+          description: Active sports catalogue, skill levels, and discovery radius settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  data:
+                    type: object
+                    properties:
+                      sports:
+                        type: array
+                        items:
+                          type: object
+                          required: [slug, name]
+                          properties:
+                            slug: { type: string }
+                            name: { type: string }
+                      skillLevels:
+                        type: array
+                        items: { type: string, enum: [beginner, intermediate, advanced] }
+                      discoveryRadius:
+                        type: object
+                        required: [minKm, maxKm, stepKm, defaultKm]
+                        properties:
+                          minKm: { type: number }
+                          maxKm: { type: number }
+                          stepKm: { type: number }
+                          defaultKm: { type: number }
         "401": { $ref: "#/components/responses/Unauthorized" }
   /v1/users/profile:
     put:
