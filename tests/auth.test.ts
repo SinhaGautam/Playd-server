@@ -13,7 +13,7 @@ describe('authentication', () => {
     const app = buildApp();
     apps.push(app);
 
-    const response = await app.inject({ method: 'GET', url: '/v1/users/me' });
+    const response = await app.inject({ method: 'GET', url: '/v1/users' });
 
     expect(response.statusCode).toBe(401);
     expect(response.json()).toMatchObject({
