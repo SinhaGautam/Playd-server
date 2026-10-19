@@ -1,3 +1,4 @@
+import { DEFAULT_DISCOVERY_RADIUS_KM } from "../users/users.dto.js";
 import type { DiscoveryQueryDto, SwipeDto } from "./discovery.dto.js";
 import type { DiscoveryRepository } from "./discovery.repository.js";
 function age(date: Date): number {
@@ -85,10 +86,11 @@ export class DiscoveryService {
             preferences.preferredCity.toLowerCase()
         )
           return false;
+        const maxDistanceKm =
+          preferences?.maxDistanceKm?.toNumber() ?? DEFAULT_DISCOVERY_RADIUS_KM;
         if (
-          preferences?.maxDistanceKm &&
           candidate.distanceKm !== null &&
-          candidate.distanceKm > preferences.maxDistanceKm.toNumber()
+          candidate.distanceKm > maxDistanceKm
         )
           return false;
         return true;

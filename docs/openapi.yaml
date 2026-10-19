@@ -81,17 +81,66 @@ paths:
       responses:
         "200": { description: Current user and profile }
         "401": { $ref: "#/components/responses/Unauthorized" }
+  /v1/sports:
+    get:
+      tags: [Users]
+      summary: List active sports and supported skill levels
+      responses:
+        "200":
+          description: Active sports catalogue, skill levels, and discovery radius settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  data:
+                    type: object
+                    properties:
+                      sports:
+                        type: array
+                        items:
+                          type: object
+                          required: [slug, name]
+                          properties:
+                            slug: { type: string }
+                            name: { type: string }
+                      skillLevels:
+                        type: array
+                        items: { type: string, enum: [beginner, intermediate, advanced] }
+                      discoveryRadius:
+                        type: object
+                        required: [minKm, maxKm, stepKm, defaultKm]
+                        properties:
+                          minKm: { type: number }
+                          maxKm: { type: number }
+                          stepKm: { type: number }
+                          defaultKm: { type: number }
+        "401": { $ref: "#/components/responses/Unauthorized" }
   /v1/users/profile:
     put:
       tags: [Users]
-      summary: Create or update current user profile
+      summary: Create or update current user profile and sport selections
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: "#/components/schemas/ProfileInput" }
       responses:
-        "200": { description: Profile updated }
+        "200": { description: Profile and sports updated }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /v1/users/preferences:
+    put:
+      tags: [Users]
+      summary: Update current user's discovery preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserPreferencesInput" }
+      responses:
+        "200": { description: Preferences updated }
         "400": { $ref: "#/components/responses/ValidationError" }
         "401": { $ref: "#/components/responses/Unauthorized" }
   /v1/discovery:
@@ -369,6 +418,21 @@ components:
         latitude: { type: number, minimum: -90, maximum: 90, nullable: true }
         longitude: { type: number, minimum: -180, maximum: 180, nullable: true }
         city: { type: string, maxLength: 120, nullable: true }
+        sports:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/UserSportSelection" }
+    UserSportSelection:
+      type: object
+      required: [slug, skillLevel]
+      properties:
+        slug: { type: string, minLength: 1, maxLength: 80 }
+        skillLevel: { type: string, enum: [beginner, intermediate, advanced] }
+    UserPreferencesInput:
+      type: object
+      required: [maxDistanceKm]
+      properties:
+        maxDistanceKm: { type: number, minimum: 0, maximum: 1000, nullable: true }
     SuccessResponse:
       type: object
       required: [success, data, meta]
