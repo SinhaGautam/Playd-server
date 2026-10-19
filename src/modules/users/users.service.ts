@@ -1,5 +1,5 @@
 import { NotFoundException } from "../../core/errors.js";
-import type { ProfileDto, UserPreferencesDto } from "./users.dto.js";
+import { DEFAULT_DISCOVERY_RADIUS_KM, DISCOVERY_RADIUS_MAX_KM, DISCOVERY_RADIUS_MIN_KM, DISCOVERY_RADIUS_STEP_KM, type ProfileDto, type UserPreferencesDto } from "./users.dto.js";
 import type { UsersRepository } from "./users.repository.js";
 
 export class UsersService {
@@ -9,6 +9,7 @@ export class UsersService {
     return this.repository.listActiveSports().then((sports) => ({
       sports,
       skillLevels: ["beginner", "intermediate", "advanced"] as const,
+      discoveryRadius: { minKm: DISCOVERY_RADIUS_MIN_KM, maxKm: DISCOVERY_RADIUS_MAX_KM, stepKm: DISCOVERY_RADIUS_STEP_KM, defaultKm: DEFAULT_DISCOVERY_RADIUS_KM },
     }));
   }
 
