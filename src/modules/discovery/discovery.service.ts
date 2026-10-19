@@ -86,7 +86,8 @@ export class DiscoveryService {
         )
           return false;
         if (
-          preferences?.maxDistanceKm &&
+          preferences?.maxDistanceKm !== null &&
+          preferences?.maxDistanceKm !== undefined &&
           candidate.distanceKm !== null &&
           candidate.distanceKm > preferences.maxDistanceKm.toNumber()
         )
