@@ -1,10 +1,21 @@
 import type { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../../common/http/api-response.js";
 import { parseBody } from "../../common/validation/validate.js";
-import { ProfileSchema } from "./users.dto.js";
+import { ProfileSchema, UserPreferencesSchema } from "./users.dto.js";
 import type { UsersService } from "./users.service.js";
+
 export class UsersController {
   public constructor(private readonly service: UsersService) {}
+
+  public listSports = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      return res.json(
+        ApiResponse.success(await this.service.listSports(), req.requestId),
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
 
   public getUserById = async (
     req: Request,
@@ -22,6 +33,7 @@ export class UsersController {
       next(e);
     }
   };
+
   public updateProfile = async (
     req: Request,
     res: Response,
@@ -33,6 +45,26 @@ export class UsersController {
           await this.service.updateProfile(
             req.user!.id,
             parseBody(ProfileSchema, req),
+          ),
+          req.requestId,
+        ),
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  public updatePreferences = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      return res.json(
+        ApiResponse.success(
+          await this.service.updatePreferences(
+            req.user!.id,
+            parseBody(UserPreferencesSchema, req),
           ),
           req.requestId,
         ),
